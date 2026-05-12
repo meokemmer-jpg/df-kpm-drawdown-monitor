@@ -1,0 +1,145 @@
+# DF-KPM-Drawdown-Monitor Configuration [CRUX-MK]
+df_id: df-kpm-drawdown-monitor
+df_name: KPM-Drawdown-Monitor
+welle_introduced: welle-42
+type: foundation-df
+version: 0.1.0-PHASE-1
+status: PHASE-1-SCAFFOLD
+crux-mk: true
+
+k0_touch: true
+k0_caveats:
+  - "Familien-Vermoegen-Drawdown Direct-Monitoring"
+  - "Variante-D Drawdown-Caps STRIKT (15/20/25%)"
+  - "HARD-CAP triggert Martin-Phronesis-Gate"
+  - "ABSOLUTE-NO-GO triggert Familien-Notfall-Protokoll"
+  - "Cross-LLM-3OF3 + Martin-Phronesis pro Real-Mode-Aktivieren"
+
+phronesis_required: true
+sandbox_default: true
+
+description: |
+  Variante-D-Compliance-Monitor fuer Drawdown-Caps:
+  Soft-Brake 15% / Hard-Cap 20% / Absolute-No-Go 25% + HIVE-Gate.
+  Sandbox-Default mit Mock-Drawdown-Time-Series.
+  Foundation-DF fuer KPM-Rebalance-Engine.
+
+cascade_isolation: hard
+failure_blast_radius: 0
+output_feeds_into_training: false
+external_anchor_type: market_data_feed
+concurrent_spawn_protection: both
+lock_dir: /tmp/df-kpm-drawdown-monitor.lock
+
+tier_2_check:
+  lambda_per_month_estimate: 30
+  narrow_scope: "Drawdown-Cap-Monitoring + HIVE-Gate-Check + Alert-Emission"
+  determinism: 0.95
+  rollback_seconds: 30
+  test_coverage_target: 0.90
+  k0_protected: true
+  q0_measurable: true
+  escalation_after_n_fails: 3
+  rho_budget_eur_day: 0
+  audit_trail: branch-hub/audit/df-kpm-drawdown-monitor.jsonl
+
+k11_cascade_containment:
+  cascade_isolation: hard
+  failure_blast_radius: 0
+  dependency_dlq_strategy: "Per-Cap-Stufe eigene Alert-DLQ + jsonl-Backup"
+
+k12_distillation_resistenz:
+  output_feeds_into_training: false
+  provenance_required_in_output: true
+  non_llm_validation_layer: rule-based-cap-validator
+
+k13_independent_ground_truth:
+  external_anchor_type: market_data_feed
+  external_anchor_validation_frequency: "daily 06:00 NAV-Drawdown-Calc"
+  pre_action_domain_check:
+    env_tag: "sandbox/dev/staging/prod"
+    mount_point: "sqlite-db Path"
+    network_region: "Market-Data-Endpoints"
+  pre_action_backup_check:
+    backup_status: "previous Drawdown-Snapshot konsistent?"
+    replication_lag: "n/a"
+  pre_action_blast_radius_check:
+    blast_radius: "ein Drawdown-Snapshot + Alert-Emission"
+    reversibility_class: "state-only (Alert-Historie append-only)"
+
+k14_human_override_decay:
+  override_complexity: single_command
+  override_documentation_freshness_days: 30
+  martin_review_cadence: "weekly Drawdown-Trend-Audit + sofort bei HARD_CAP-Alert"
+  bus_factor_handover_drilled: false
+
+k15_entropy_budget:
+  entropy_added_loc_estimate: 700
+  entropy_added_concepts:
+    - DrawdownSnapshot
+    - DrawdownAlert
+    - HiveScoreCheck
+    - VarianteDCapEnforcer
+    - FamilyEmergencyProtocol
+  entropy_justified_by_rho: "+EUR 100k/Jahr durch Variante-D-strikte-Compliance + K_0-Schutz"
+  entropy_subtractive_potential: "ersetzt manuelle taegliche Drawdown-Calc + Mental-Math"
+
+k16_concurrent_spawn_mutex:
+  concurrent_spawn_protection: both
+  lock_dir: /tmp/df-kpm-drawdown-monitor.lock
+  lock_stale_age_h: 6
+  engine_pgrep_check: true
+  lock_release_on: EXIT_INT_TERM
+
+lose_coupling:
+  LC1_graceful_degradation:
+    degradation_modes:
+      - full
+      - degraded_no_market_data
+      - sandbox_mock
+    degradation_test_required: true
+  LC2_direct_mode:
+    direct_mode_available: true
+    direct_mode_capability: 0.7
+    direct_mode_trigger: "market_data_feed unreachable >30s OR Phronesis-Ticket missing"
+  LC3_circuit_breaker:
+    circuit_breaker_timeout_s: 30
+    circuit_breaker_open_threshold: 3
+    circuit_breaker_half_open_test_interval_s: 300
+  LC4_failure_isolation:
+    state_externalization: true
+    idempotent_operations: true
+    dependency_dlq_separate: true
+  LC5_health_check:
+    health_check_dependencies: [market_data_feed]
+    health_check_degraded_score: 0.6
+    health_check_endpoint_or_file: "/tmp/df-kpm-drawdown-monitor-health.json"
+
+operations:
+  output_path: ~/Projects/dark-factories/df-kpm-drawdown-monitor/
+  sqlite_db_path: ~/.df-kpm-drawdown-monitor/state.db
+  jsonl_backup_path: branch-hub/audit/df-kpm-drawdown-monitor.jsonl
+  stop_flag_path: /tmp/df-kpm-drawdown-monitor.stop
+  health_file_path: /tmp/df-kpm-drawdown-monitor-health.json
+
+env_vars:
+  DF_KPM_DRAWDOWN_REAL_ENABLED:
+    default: false
+    description: "Real-Mode (true=live drawdown calc, default=mock)"
+  PHRONESIS_TICKET:
+    required_when: DF_KPM_DRAWDOWN_REAL_ENABLED=true
+
+rho_estimate:
+  annual_eur: 100000
+  reason: "Variante-D-Compliance + K_0-Schutz vor Drawdown-Cliff-Effects (haerterer Schutz als KPM-Sizing-Standard)"
+  schwer_quantifizierbar: false
+
+dependencies_phase_2:
+  - df-kpm-portfolio-tracker
+  - df-kpm-rebalance-engine
+
+crux_bindung:
+  K_0: "MAXIMAL geschuetzt (Drawdown-Cap-Enforcement, Phronesis-Pflicht bei HARD_CAP, Familien-Notfall bei NO_GO)"
+  Q_0: "Variante-D-Compliance dokumentiert + auditierbar"
+  I_min: "Strikte 4-Stufen-Drawdown-Mechanik per kpm-sizing.md"
+  W_0: "Martin-Bandbreite minimiert (nur Alerts bei Cap-Trigger statt Daily-Pruefung)"
