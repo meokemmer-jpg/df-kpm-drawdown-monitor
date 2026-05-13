@@ -24,6 +24,26 @@ description: |
   Sandbox-Default mit Mock-Drawdown-Time-Series.
   Foundation-DF fuer KPM-Rebalance-Engine.
 
+# === Default-Action (per ausreden-schutz.md Schicht 2, Welle-47 Migration Batch-2) ===
+default_action:
+  description: "Drawdown-Monitor ueber Variante-D-Caps (15/20/25%) + HIVE-Gate-Check. Output: Cap-State (SOFT-BRAKE | HARD-CAP | ABSOLUTE-NO-GO | OK) pro Familien-Vermoegen-Snapshot"
+  rho_per_run_eur: 100
+  rho_validation_source: unvalidated
+  block_gates:
+    - gate_id: K14
+      block_reason: "K_0-DIRECT Familien-Vermoegen: Phronesis-Required + sandbox_default=true (Variante-D Drawdown-Caps STRIKT)"
+      false_block_cost_eur: 250
+      legitimate_block_condition: "Real-Vermoegen-Monitor ohne Cross-LLM-3OF3 ODER ohne Martin-Phronesis"
+    - gate_id: K13_PAV
+      block_reason: "Pre-Action-Verification: market_data_feed + portfolio_snapshot_source + blast_radius PFLICHT"
+      false_block_cost_eur: 80
+      legitimate_block_condition: "Real-Market-Feed ohne Source-Validation ODER Drawdown-Calc auf stale Daten"
+    - gate_id: K12
+      block_reason: "Provenance Pflicht (Drawdown-Calc nachvollziehbar pro Position + Zeitfenster)"
+      false_block_cost_eur: 50
+      legitimate_block_condition: "Drawdown-Output ohne Provenance ODER Cap-State ohne Audit-Trail"
+  graceful_degradation_path: "Sandbox-Mock-Drawdown-Time-Series, kein Real-Vermoegen-Read ohne Phronesis"
+
 cascade_isolation: hard
 failure_blast_radius: 0
 output_feeds_into_training: false
