@@ -1,4 +1,3 @@
-# DF-KPM-Drawdown-Monitor Configuration [CRUX-MK]
 df_id: df-kpm-drawdown-monitor
 df_name: KPM-Drawdown-Monitor
 welle_introduced: welle-42
@@ -6,122 +5,120 @@ type: foundation-df
 version: 0.1.0-PHASE-1
 status: PHASE-1-SCAFFOLD
 crux-mk: true
-
 k0_touch: true
 k0_caveats:
-  - "Familien-Vermoegen-Drawdown Direct-Monitoring"
-  - "Variante-D Drawdown-Caps STRIKT (15/20/25%)"
-  - "HARD-CAP triggert Martin-Phronesis-Gate"
-  - "ABSOLUTE-NO-GO triggert Familien-Notfall-Protokoll"
-  - "Cross-LLM-3OF3 + Martin-Phronesis pro Real-Mode-Aktivieren"
-
+- Familien-Vermoegen-Drawdown Direct-Monitoring
+- Variante-D Drawdown-Caps STRIKT (15/20/25%)
+- HARD-CAP triggert Martin-Phronesis-Gate
+- ABSOLUTE-NO-GO triggert Familien-Notfall-Protokoll
+- Cross-LLM-3OF3 + Martin-Phronesis pro Real-Mode-Aktivieren
 phronesis_required: true
 sandbox_default: true
+description: 'Variante-D-Compliance-Monitor fuer Drawdown-Caps:
 
-description: |
-  Variante-D-Compliance-Monitor fuer Drawdown-Caps:
   Soft-Brake 15% / Hard-Cap 20% / Absolute-No-Go 25% + HIVE-Gate.
+
   Sandbox-Default mit Mock-Drawdown-Time-Series.
+
   Foundation-DF fuer KPM-Rebalance-Engine.
 
-# === Default-Action (per ausreden-schutz.md Schicht 2, Welle-47 Migration Batch-2) ===
+  '
 default_action:
-  description: "Drawdown-Monitor ueber Variante-D-Caps (15/20/25%) + HIVE-Gate-Check. Output: Cap-State (SOFT-BRAKE | HARD-CAP | ABSOLUTE-NO-GO | OK) pro Familien-Vermoegen-Snapshot"
+  description: 'Drawdown-Monitor ueber Variante-D-Caps (15/20/25%) + HIVE-Gate-Check.
+    Output: Cap-State (SOFT-BRAKE | HARD-CAP | ABSOLUTE-NO-GO | OK) pro Familien-Vermoegen-Snapshot'
   rho_per_run_eur: 100
   rho_validation_source: unvalidated
   block_gates:
-    - gate_id: K14
-      block_reason: "K_0-DIRECT Familien-Vermoegen: Phronesis-Required + sandbox_default=true (Variante-D Drawdown-Caps STRIKT)"
-      false_block_cost_eur: 250
-      legitimate_block_condition: "Real-Vermoegen-Monitor ohne Cross-LLM-3OF3 ODER ohne Martin-Phronesis"
-    - gate_id: K13_PAV
-      block_reason: "Pre-Action-Verification: market_data_feed + portfolio_snapshot_source + blast_radius PFLICHT"
-      false_block_cost_eur: 80
-      legitimate_block_condition: "Real-Market-Feed ohne Source-Validation ODER Drawdown-Calc auf stale Daten"
-    - gate_id: K12
-      block_reason: "Provenance Pflicht (Drawdown-Calc nachvollziehbar pro Position + Zeitfenster)"
-      false_block_cost_eur: 50
-      legitimate_block_condition: "Drawdown-Output ohne Provenance ODER Cap-State ohne Audit-Trail"
-  graceful_degradation_path: "Sandbox-Mock-Drawdown-Time-Series, kein Real-Vermoegen-Read ohne Phronesis"
-
+  - gate_id: K14
+    block_reason: 'K_0-DIRECT Familien-Vermoegen: Phronesis-Required + sandbox_default=true
+      (Variante-D Drawdown-Caps STRIKT)'
+    false_block_cost_eur: 250
+    legitimate_block_condition: Real-Vermoegen-Monitor ohne Cross-LLM-3OF3 ODER ohne
+      Martin-Phronesis
+  - gate_id: K13_PAV
+    block_reason: 'Pre-Action-Verification: market_data_feed + portfolio_snapshot_source
+      + blast_radius PFLICHT'
+    false_block_cost_eur: 80
+    legitimate_block_condition: Real-Market-Feed ohne Source-Validation ODER Drawdown-Calc
+      auf stale Daten
+  - gate_id: K12
+    block_reason: Provenance Pflicht (Drawdown-Calc nachvollziehbar pro Position +
+      Zeitfenster)
+    false_block_cost_eur: 50
+    legitimate_block_condition: Drawdown-Output ohne Provenance ODER Cap-State ohne
+      Audit-Trail
+  graceful_degradation_path: Sandbox-Mock-Drawdown-Time-Series, kein Real-Vermoegen-Read
+    ohne Phronesis
 cascade_isolation: hard
 failure_blast_radius: 0
 output_feeds_into_training: false
 external_anchor_type: market_data_feed
 concurrent_spawn_protection: both
 lock_dir: /tmp/df-kpm-drawdown-monitor.lock
-
 tier_2_check:
   lambda_per_month_estimate: 30
-  narrow_scope: "Drawdown-Cap-Monitoring + HIVE-Gate-Check + Alert-Emission"
+  narrow_scope: Drawdown-Cap-Monitoring + HIVE-Gate-Check + Alert-Emission
   determinism: 0.95
   rollback_seconds: 30
-  test_coverage_target: 0.90
+  test_coverage_target: 0.9
   k0_protected: true
   q0_measurable: true
   escalation_after_n_fails: 3
   rho_budget_eur_day: 0
   audit_trail: branch-hub/audit/df-kpm-drawdown-monitor.jsonl
-
 k11_cascade_containment:
   cascade_isolation: hard
   failure_blast_radius: 0
-  dependency_dlq_strategy: "Per-Cap-Stufe eigene Alert-DLQ + jsonl-Backup"
-
+  dependency_dlq_strategy: Per-Cap-Stufe eigene Alert-DLQ + jsonl-Backup
 k12_distillation_resistenz:
   output_feeds_into_training: false
   provenance_required_in_output: true
   non_llm_validation_layer: rule-based-cap-validator
-
 k13_independent_ground_truth:
   external_anchor_type: market_data_feed
-  external_anchor_validation_frequency: "daily 06:00 NAV-Drawdown-Calc"
+  external_anchor_validation_frequency: daily 06:00 NAV-Drawdown-Calc
   pre_action_domain_check:
-    env_tag: "sandbox/dev/staging/prod"
-    mount_point: "sqlite-db Path"
-    network_region: "Market-Data-Endpoints"
+    env_tag: sandbox/dev/staging/prod
+    mount_point: sqlite-db Path
+    network_region: Market-Data-Endpoints
   pre_action_backup_check:
-    backup_status: "previous Drawdown-Snapshot konsistent?"
-    replication_lag: "n/a"
+    backup_status: previous Drawdown-Snapshot konsistent?
+    replication_lag: n/a
   pre_action_blast_radius_check:
-    blast_radius: "ein Drawdown-Snapshot + Alert-Emission"
-    reversibility_class: "state-only (Alert-Historie append-only)"
-
+    blast_radius: ein Drawdown-Snapshot + Alert-Emission
+    reversibility_class: state-only (Alert-Historie append-only)
 k14_human_override_decay:
   override_complexity: single_command
   override_documentation_freshness_days: 30
-  martin_review_cadence: "weekly Drawdown-Trend-Audit + sofort bei HARD_CAP-Alert"
+  martin_review_cadence: weekly Drawdown-Trend-Audit + sofort bei HARD_CAP-Alert
   bus_factor_handover_drilled: false
-
 k15_entropy_budget:
   entropy_added_loc_estimate: 700
   entropy_added_concepts:
-    - DrawdownSnapshot
-    - DrawdownAlert
-    - HiveScoreCheck
-    - VarianteDCapEnforcer
-    - FamilyEmergencyProtocol
-  entropy_justified_by_rho: "+EUR 100k/Jahr durch Variante-D-strikte-Compliance + K_0-Schutz"
-  entropy_subtractive_potential: "ersetzt manuelle taegliche Drawdown-Calc + Mental-Math"
-
+  - DrawdownSnapshot
+  - DrawdownAlert
+  - HiveScoreCheck
+  - VarianteDCapEnforcer
+  - FamilyEmergencyProtocol
+  entropy_justified_by_rho: +EUR 100k/Jahr durch Variante-D-strikte-Compliance + K_0-Schutz
+  entropy_subtractive_potential: ersetzt manuelle taegliche Drawdown-Calc + Mental-Math
 k16_concurrent_spawn_mutex:
   concurrent_spawn_protection: both
   lock_dir: /tmp/df-kpm-drawdown-monitor.lock
   lock_stale_age_h: 6
   engine_pgrep_check: true
   lock_release_on: EXIT_INT_TERM
-
 lose_coupling:
   LC1_graceful_degradation:
     degradation_modes:
-      - full
-      - degraded_no_market_data
-      - sandbox_mock
+    - full
+    - degraded_no_market_data
+    - sandbox_mock
     degradation_test_required: true
   LC2_direct_mode:
     direct_mode_available: true
     direct_mode_capability: 0.7
-    direct_mode_trigger: "market_data_feed unreachable >30s OR Phronesis-Ticket missing"
+    direct_mode_trigger: market_data_feed unreachable >30s OR Phronesis-Ticket missing
   LC3_circuit_breaker:
     circuit_breaker_timeout_s: 30
     circuit_breaker_open_threshold: 3
@@ -131,35 +128,54 @@ lose_coupling:
     idempotent_operations: true
     dependency_dlq_separate: true
   LC5_health_check:
-    health_check_dependencies: [market_data_feed]
+    health_check_dependencies:
+    - market_data_feed
     health_check_degraded_score: 0.6
-    health_check_endpoint_or_file: "/tmp/df-kpm-drawdown-monitor-health.json"
-
+    health_check_endpoint_or_file: /tmp/df-kpm-drawdown-monitor-health.json
 operations:
   output_path: ~/Projects/dark-factories/df-kpm-drawdown-monitor/
   sqlite_db_path: ~/.df-kpm-drawdown-monitor/state.db
   jsonl_backup_path: branch-hub/audit/df-kpm-drawdown-monitor.jsonl
   stop_flag_path: /tmp/df-kpm-drawdown-monitor.stop
   health_file_path: /tmp/df-kpm-drawdown-monitor-health.json
-
 env_vars:
   DF_KPM_DRAWDOWN_REAL_ENABLED:
     default: false
-    description: "Real-Mode (true=live drawdown calc, default=mock)"
+    description: Real-Mode (true=live drawdown calc, default=mock)
   PHRONESIS_TICKET:
     required_when: DF_KPM_DRAWDOWN_REAL_ENABLED=true
-
 rho_estimate:
   annual_eur: 100000
-  reason: "Variante-D-Compliance + K_0-Schutz vor Drawdown-Cliff-Effects (haerterer Schutz als KPM-Sizing-Standard)"
+  reason: Variante-D-Compliance + K_0-Schutz vor Drawdown-Cliff-Effects (haerterer
+    Schutz als KPM-Sizing-Standard)
   schwer_quantifizierbar: false
-
 dependencies_phase_2:
-  - df-kpm-portfolio-tracker
-  - df-kpm-rebalance-engine
-
+- df-kpm-portfolio-tracker
+- df-kpm-rebalance-engine
 crux_bindung:
-  K_0: "MAXIMAL geschuetzt (Drawdown-Cap-Enforcement, Phronesis-Pflicht bei HARD_CAP, Familien-Notfall bei NO_GO)"
-  Q_0: "Variante-D-Compliance dokumentiert + auditierbar"
-  I_min: "Strikte 4-Stufen-Drawdown-Mechanik per kpm-sizing.md"
-  W_0: "Martin-Bandbreite minimiert (nur Alerts bei Cap-Trigger statt Daily-Pruefung)"
+  K_0: MAXIMAL geschuetzt (Drawdown-Cap-Enforcement, Phronesis-Pflicht bei HARD_CAP,
+    Familien-Notfall bei NO_GO)
+  Q_0: Variante-D-Compliance dokumentiert + auditierbar
+  I_min: Strikte 4-Stufen-Drawdown-Mechanik per kpm-sizing.md
+  W_0: Martin-Bandbreite minimiert (nur Alerts bei Cap-Trigger statt Daily-Pruefung)
+activation_gates:
+  internal_real_mode:
+    env_var: df-kpm-drawdown-monitor_INTERNAL_REAL_ENABLED
+    default: false
+    description: Echte Daten-Verarbeitung lokal/sandbox, KEIN External-Output
+  external_real_mode:
+    env_var: df-kpm-drawdown-monitor_REAL_ENABLED
+    default: false
+    description: Real-Mode mit External-Output (Phronesis-Sign-Off Pflicht)
+    requires:
+      phronesis_ticket_env: PHRONESIS_TICKET
+      signoff_id_env: OPERATOR_SIGNOFF_ID
+  external_output_gate:
+    env_var_signoff_id: OPERATOR_SIGNOFF_ID
+    default: BLOCKED
+    description: Mechanischer Block fuer External-Communication ohne Sign-Off
+output_pipe_block:
+- external_api_call_unverified
+- production_db_write_unverified
+
+# [CRUX-MK]
