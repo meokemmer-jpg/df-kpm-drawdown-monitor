@@ -1,0 +1,8 @@
+{
+  "df": "df-kpm-drawdown-monitor",
+  "ts": "2026-06-05T10:53:18.591807+00:00",
+  "ok": true,
+  "bytes": 2727,
+  "model": "qwen2.5:14b-instruct",
+  "duration_s": 45.3
+}
