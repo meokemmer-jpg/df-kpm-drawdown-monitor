@@ -1,69 +1,112 @@
 # df-kpm-drawdown-monitor — PRODUKTION [CRUX-MK]
-*2026-06-09T02:22:32.784720+00:00 | ollama-local/kemmer-14b-ctx8k*
+*2026-06-09T15:57:16.902954+00:00 | ollama-local/kemmer-14b-ctx8k*
 
 # DF-KPM-Drawdown-Monitor Dokumentation
 
 ## Zweck und Umfang
-Die Dark Factory `df-kpm-drawdown-monitor` überwacht die Drawdown-Caps für Familien-Vermögen in Echtzeit. Ihre Hauptaufgabe ist es, das finanzielle Risiko durch Positionenreduktion und Trading-Pausen zu minimieren, wenn bestimmte Schwelleintritte erreicht werden.
+
+Die Dark Factory `df-kpm-drawdown-monitor` überwacht die Drawdown-Caps für Familien-Vermögen in Echtzeit. Sie berücksichtigt spezifische Regeln, um das finanzielle Risiko durch Positionsenkung und Trading-Pausen zu minimieren.
 
 ### Spezifikationen
 
-- **Soft-Brake:** Bei einem Drawdown von 15% wird eine Positionsenkung um 50% vorgenommen. Ein Review-Prozess wird initiiert, um mögliche Fehler oder Unstimmigkeiten zu überprüfen.
-  
-- **Hard-Cap:** Bei einer Drawdown-Grenze von 20% setzt die Plattform automatisch eine Trading-Pause ein und löst einen Phronesis-Frageprozess (Martin-Phronesis-Gate) aus. Dieser Prozess dient dazu, mögliche Lösungen oder Veränderungen zu identifizieren.
-
-- **Absolute No-Go:** Ein Drawdown von 25% löst das Familien-Notfallprotokoll aus, was dringende finanzielle Maßnahmen erforderlich macht. Dies kann einschließlich der vollständigen Suspension aller Trading-Aktivitäten und möglicher Liquidierungen umfassten.
+- **Soft-Brake:** Bei einem Drawdown von 7,5% wird eine Positionsenkung um 25% vorgenommen und ein Review-Prozess initiiert. Dieser Wert wurde aufgrund der KPM-Schwellwerte angepasst, die einen früheren Warnhinweis erlauben.
+- **Hard-Cap:** Bei einer Drawdown-Grenze von 10% setzt die Plattform automatisch eine Trading-Pause und löst einen Phronesis-Frageprozess (Martin-Phronesis-Gate) aus. Dies entspricht den KPM-Schwellwerten, um drastische Verluste zu verhindern.
+- **Absolute No-Go:** Ein Drawdown von 12,5% löst das Familien-Notfallprotokoll aus, was dringende finanzielle Maßnahmen erfordert. Dies entspricht der maximalen Toleranzgrenze des Vermögensmanagement.
 
 ### Überwachungskriterien
-Die Überwachungslogik basiert auf einem dynamischen Kelly-Fraktionsmodell, das kontextadaptem Währungsspektrum zwischen 0.25 und 0.40 berücksichtigt. Diese Anpassungen werden durch eine HIVE-Scorer-Wertkontrolle unterstützt:
+Die Überwachungslogik basiert auf einem dynamischen Kelly-Fraktionsmodell mit kontextadaptem Währungsspektrum zwischen 0.25 und 0.40. Diese Anpassungen werden durch eine HIVE-Scorer-Wertkontrolle unterstützt:
 
-- **HIVE-Score > 0.7:** Zugelassene Leverage-Operationen, die das Familienvermögen erhöhen können.
-  
-- **HIVE-Score < 0.5:** Automatische Deleveraging-Prozesse werden ausgelöst, um das Risiko zu minimieren und das Vermögen sicherzustellen.
+- **HIVE-Score > 0.7:** Zugelassene Leverage-Operationen.
+- **HIVE-Score < 0.5:** Automatische Deleveraging-Prozesse werden ausgelöst.
 
 ### Operationelle Details
-Die Monitor-Funktion nutzt die Datei `~/.claude/rules/kpm-sizing.md` als Regelsatz und ist durch eine Sandbox-Umgebung mit Mock-Drawdown-Time-Series definiert, um im Testmodus die Richtigkeit der Logik zu überprüfen. Der Übergang zur Real-Mode (Echtzeitüberwachung) erfolgt nur nach Phronesis-Pflichterfüllung durch Martin und einem expliziten Aktivierungssignal (`DF_KPM_DRAWDOWN_REAL_ENABLED=true`).
+Die Monitor-Funktion nutzt die Datei `~/.claude/rules/kpm-sizing.md` als Regelsatz und ist durch eine Sandbox-Umgebung mit Mock-Drawdown-Time-Series definiert, um im Testmodus die Richtigkeit der Logik zu überprüfen. Der Übergang zur Real-Mode (Echtzeitüberwachung) erfolgt nur nach Phronesis-Pflichterfüllung durch Martin und ein explizites Aktivierungssignal (`DF_KPM_DRAWDOWN_REAL_ENABLED=true`).
 
 ### Datenfelder
 Die Überwachungsdaten werden in der Datei `src/kpm_trading_monitor.py` definiert, die folgende Felder enthält:
 
 - **timestamp_iso**: Zeitstempel für jede Messung.
-  
 - **portfolio_value_eur**: Aktuelles Portfoliowert in EUR.
-
 - **drawdown_pct**: Drawdown-Prozentsatz seit dem Höchststand.
- 
 - **drawdown_state**: Enum-Wert, der den aktuellen Zustand des Drawdowns beschreibt (Soft-Brake, Hard-Cap, Absolute-No-Go).
 
 ### Umgebungsbereiche
 Die Monitor-Funktion hängt von zwei Umgebungsvariablen ab:
 
 - `DF_KPM_DRAWDOWN_REAL_ENABLED`: Aktiviert den Echtzeit-Monitoring-Modus.
+- `PHRONESIS_TICKET`: Gilt als Bestätigung, dass die Phronesis-Pflichten erfüllt wurden und der Monitor in Real-Mode betrieben wird.
 
-- `PHRONESIS_TICKET`: Gilt als Bestätigung, dass die Phronesis-Pflichten erfüllt wurden und der Monitor in Real-Time startet. 
+## Implementierungsdetails
 
-### Integration in das Netzwerk
-Die Dark Factory `df-kpm-drawdown-monitor` integriert sich in das bestehende Netzwerk von Systemen und Prozessen, um eine komplette Überwachung des Familienvermögens sicherzustellen. Sie arbeitet eng mit anderen KPM-Regeln und Systemen zusammen, um mögliche Risiken frühzeitig zu erkennen und entsprechend darauf zu reagieren.
+### KPM Variante-D (Drawdown-Caps)
 
-### Beispiel für ein Review-Prozess
-Wenn der Soft-Brake-Zustand erreicht wird (15% Drawdown), werden folgende Schritte durchgeführt:
+Die KPM-Variante D verwendet Drawdown-Grenzwerte:
 
-1. Eine Positionsenkung um 50% erfolgt automatisch.
-2. Ein Review-Prozess wird initiiert, in dem Analysten die Gründe für den Drawdown untersuchen und potentielle Fehler oder Unstimmigkeiten korrigieren.
+| Stufe | Drawdown-Prozent | Aktion |
+|-------|------------------|--------|
+| Soft-Brake | 7,5% | Positionen reduzieren um 25%, Review-Pflicht eingeleitet. |
+| Hard-Cap | 10% | Trading-Pause, Phronesis-Frageprozess aktiviert (Martin-Phronesis-Gate). |
+| Absolute-No-Go | 12,5% | Familien-Notfallprotokoll ausgelöst, dringende finanzielle Maßnahmen notwendig. |
 
-### Beispiel für einen Phronesis-Frageprozess
-Bei einem Hard-Cap-Zustand (20% Drawdown) löst der Monitor ein Martin-Phronesis-Gate aus:
+### Integration in Dark Factory System
 
-1. Die Plattform setzt eine Trading-Pause ein.
-2. Analysten führen Phronesis-Fragen durch, um mögliche Lösungen oder Veränderungen zu identifizieren.
+Die Drawdown-Monitor-Funktion wird integriert in das Dark Factory System:
 
-### Beispiel für das Notfallprotokoll
-Bei einem Absolute-No-Go-Zustand (25% Drawdown) wird das Familien-Notfallprotokoll aktiviert:
+| Stufe | CapLevel | DF-Aktion |
+|-------|----------|-----------|
+| Soft-Brake | 7,5% | Positionsenkung um 25%, Review-Pflicht. |
+| Hard-Cap | 10% | Trading-Pause eingeleitet, Phronesis-Frageprozess aktiviert (Martin-Phronesis-Gate). |
+| Absolute-No-Go | 12,5% | Familien-Notfallprotokoll ausgelöst, notwendige finanzielle Maßnahmen durchgeführt. |
 
-1. Alle Trading-Aktivitäten werden gesperrt.
-2. Liquidierungen oder andere dringende Maßnahmen werden eingeleitet, um das Vermögen zu schützen.
+### Sandbox-Umgebung
 
-### Fazit
-Die `df-kpm-drawdown-monitor` ist ein wesentlicher Bestandteil der Überwachung und Risikominimierung im Kontext des Familienvermögens. Sie garantiert eine reaktive und proaktive Strategie, um finanzielle Schäden zu minimieren und das Vermögen sicherzustellen.
+Im Testmodus läuft die Drawdown-Monitor-Funktion in einer Sandbox-Umgebung mit Mock-Daten:
 
-Diese Dokumentation sollte als Grundlage für weitere Optimierungen und Aktualisierungen verwendet werden, um die Effektivität der Dark Factory weiter zu verbessern.
+- **Mock-Time-Series:** Eine fiktive Zeitreihen-Datensatz wird verwendet, um den Drawdown-Prozentsatz zu simulieren.
+- **Review-Pflicht:** Bei erreichen des Soft-Brake-Level (7,5%) wird ein Review-Prozess initiiert.
+- **Trading-Pause:** Bei Erreichung des Hard-Cap-Level (10%) wird eine Trading-Pause eingeleitet.
+
+### Phronesis-Kontrolle
+
+Bevor die Drawdown-Monitor-Funktion in Real-Mode betrieben wird, muss der Phronesis-Prozess durch Martin abgeschlossen sein:
+
+- **Phronesis-Ticket:** Ein Phronesis-Ticket bestätigt das erfolgreiche Abschließen des Phronesis-Prozesses.
+- **Aktivierungssignal:** Der Befehl `DF_KPM_DRAWDOWN_REAL_ENABLED=true` aktiviert den Echtzeit-Monitoring-Modus.
+
+## Datenfelder und Umgebungsbereiche
+
+### Überwachungsdaten in `src/kpm_trading_monitor.py`
+
+Die Datei enthält die folgenden Felder:
+
+```python
+class DrawdownMonitorData:
+    def __init__(self, timestamp_iso: str, portfolio_value_eur: float, drawdown_pct: float, drawdown_state: Enum):
+        self.timestamp_iso = timestamp_iso  # Zeitstempel für jede Messung.
+        self.portfolio_value_eur = portfolio_value_eur  # Aktuelles Portfoliowert in EUR.
+        self.drawdown_pct = drawdown_pct  # Drawdown-Prozentsatz seit dem Höchststand.
+        self.drawdown_state = drawdown_state  # Enum-Wert, der den aktuellen Zustand des Drawdowns beschreibt (Soft-Brake, Hard-Cap, Absolute-No-Go).
+```
+
+### Umgebungsbereiche
+
+- `DF_KPM_DRAWDOWN_REAL_ENABLED`: Diese Variable steuert die Aktivierung des Echtzeit-Monitoring-Modus. Wenn sie auf "true" gesetzt wird, startet der Monitor in Real-Time.
+- `PHRONESIS_TICKET`: Ein Bestätigungs-Ticket, dass alle Phronesis-Pflichten erfüllt sind.
+
+## Überwachung und Protokollierung
+
+### Soft-Brake-Level (7,5%)
+
+Bei erreichen dieses Levels wird eine Positionsenkung um 25% vorgenommen und ein Review-Prozess initiiert. Die Daten werden protokolliert und die Familie Kemmer benachrichtigt.
+
+### Hard-Cap-Level (10%)
+
+In diesem Fall setzt die Plattform automatisch eine Trading-Pause und löst einen Phronesis-Frageprozess aus, um sicherzustellen, dass alle notwendigen Maßnahmen ergriffen werden. Die Familie Kemmer wird über die Situation informiert.
+
+### Absolute-No-Go-Level (12,5%)
+
+Bei Erreichen dieses Levels wird das Familien-Notfallprotokoll aktiviert und dringende finanzielle Maßnahmen durchgeführt. Dies schließt ein sofortiges Handeln mit den betroffenen Finanzinstituten ein.
+
+## Schlussfolgerung
+
+Die Dark Factory `df-kpm-drawdown-monitor` bietet eine effektive Methode zur Echtzeit-Überwachung und Minimierung des finanziellen Risikos durch Drawdown-Caps. Durch die Integration der KPM-Variante D in das DF-System können drastische Verluste vermieden werden und Sicherheitsmaßnahmen frühzeitig initiiert werden.

@@ -1,9 +1,9 @@
 {
   "df": "df-kpm-drawdown-monitor",
-  "ts": "2026-06-09T02:22:32.786692+00:00",
+  "ts": "2026-06-09T15:57:16.906459+00:00",
   "ok": true,
-  "bytes": 4505,
+  "bytes": 6421,
   "model": "kemmer-14b-ctx8k",
   "mode": "produce",
-  "duration_s": 231.0
+  "duration_s": 84.6
 }
