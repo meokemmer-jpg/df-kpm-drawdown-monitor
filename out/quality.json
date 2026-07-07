@@ -1,9 +1,9 @@
 {
   "df": "df-kpm-drawdown-monitor",
-  "ts": "2026-07-06T06:51:33.959856+00:00",
+  "ts": "2026-07-07T01:05:01.046596+00:00",
   "maturity": "TESTED",
   "maturity_level": 4,
   "evidence_grade": 4,
-  "wargame_verdict": null,
+  "wargame_verdict": "CONDITIONAL",
   "crux": "[CRUX-MK]"
 }
