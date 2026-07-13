@@ -1,0 +1,6 @@
+{
+  "verdict": "HOLDS",
+  "reason": "Der Test ruft die echte monitor_drawdown-Funktion mit benignem und adversarialem CSV-Input auf und beweist unterschiedliche Status-, Drawdown-, Provenance- und Persistenz-Outputs.",
+  "ts": "2026-07-12T14:25:23.516087+00:00",
+  "attempts": 1
+}
