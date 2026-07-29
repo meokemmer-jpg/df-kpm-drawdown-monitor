@@ -1,9 +1,10 @@
 {
   "df": "df-kpm-drawdown-monitor",
-  "ts": "2026-07-27T17:09:20.474314+00:00",
+  "ts": "2026-07-28T11:42:33.683783+00:00",
   "maturity": "TESTED",
   "maturity_level": 4,
-  "evidence_grade": 4,
+  "evidence_grade": 3,
+  "grade_basis": "pytest-gruen + HOLDS-verifiziert, 0 externe Belege (consumed-Quittung/Real-Receipt) -> max Grade-3",
   "wargame_verdict": "CONDITIONAL",
   "crux": "[CRUX-MK]"
 }
