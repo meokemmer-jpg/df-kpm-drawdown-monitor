@@ -113,3 +113,4 @@
 {"ts": "2026-09-16T05:32:16.714928+00:00", "producer": "df-kpm-drawdown-monitor", "by": "df-domain-nlm-sync", "purpose": "nlm-board", "crux": "[CRUX-MK]", "valid": true}
 {"ts": "2026-09-18T01:24:09.390805+00:00", "producer": "df-kpm-drawdown-monitor", "by": "df-domain-nlm-sync", "purpose": "nlm-board", "crux": "[CRUX-MK]", "valid": true}
 {"ts": "2026-09-20T03:56:48.161963+00:00", "producer": "df-kpm-drawdown-monitor", "by": "df-domain-nlm-sync", "purpose": "nlm-board", "crux": "[CRUX-MK]", "valid": true}
+{"ts": "2026-09-21T19:00:38.934597+00:00", "producer": "df-kpm-drawdown-monitor", "by": "df-domain-nlm-sync", "purpose": "nlm-board", "crux": "[CRUX-MK]", "valid": true}
